@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 20, changed redefence routine to use start_offset instead of start_row, lowest value is now 0, not 1.
 #version 19, fixed route tramp spiral bug that occured if height > width
 #version 18, added 6x6 bazeries
 #version 14, in monome-dinome allow user to specify second substitution
@@ -789,35 +790,35 @@ def myszkowski_decode(codetext,key):
     display = display_transposition_block(plaintext,len(key_code))            
     return [plaintext,display]
 
-def redefence_key_convert(key,start_row):
+def redefence_key_convert(key,start_offset):
     """
-    input key string and starting row number, relative to
-    first row being 1 (not 0). Output alphabetic Myszkowski key.
+    input key string and starting row offset, relative to
+    first row being 0. Output alphabetic Myszkowski key.
     """
     ext_key = key
     for i in range(len(key)-2,0,-1):
         ext_key += key[i]
-    final_key = ext_key[ start_row-1: ]+ext_key[ : start_row-1]
+    final_key = ext_key[ start_offset: ]+ext_key[ : start_offset]
     my_key = ""
     for c in final_key:
         my_key += chr(ord(c)-ord('1')+ord('A'))
     return my_key
 
-def redefence_encode(plaintext,key,start_row):
+def redefence_encode(plaintext,key,start_offset):
     """
-    input plaintext and key string and starting row number, relative to
-    first row being 1 (not 0). Output redefence codetext.
+    input plaintext and key string and starting row offset, relative to
+    first row being 0. Output redefence codetext.
     """
-    my_key = redefence_key_convert(key,start_row)
+    my_key = redefence_key_convert(key,start_offset)
     codetext = myszkowski_encode(plaintext,my_key)[0]
     return codetext
 
-def redefence_decode(codetext,key,start_row):
+def redefence_decode(codetext,key,start_offset):
     """
-    input codetext and key string and starting row number, relative to
-    first row being 1 (not 0). Output redefence plaintext.
+    input codetext and key string and starting row offset, relative to
+    first row being 0. Output redefence plaintext.
     """
-    my_key = redefence_key_convert(key,start_row)
+    my_key = redefence_key_convert(key,start_offset)
     plaintext = myszkowski_decode(codetext,my_key)[0]
     return plaintext
 
