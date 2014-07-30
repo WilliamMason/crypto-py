@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 21, changed tridigital_encode to eliinate "trans call" 7-29-2014
 #version 20, changed redefence routine to use start_offset instead of start_row, lowest value is now 0, not 1.
 #version 19, fixed route tramp spiral bug that occured if height > width
 #version 18, added 6x6 bazeries
@@ -3219,14 +3220,15 @@ def tridigital_encode(plaintext,hat,key):
     Input strings plaintext, hat and key. Hat must have 10 letters. Output
     tridigital code string.
     """
-    #make up 256 value string "trans" that translates upper case to lower and all non-letters to blanks
-    i_r = map(chr, range(256))
-    trans = [' '] * 256
-    o_a, o_z = ord('a'), (ord('z')+1)
-    trans[ord('A'):(ord('Z')+1)] = i_r[o_a:o_z]
-    trans[o_a:o_z] = i_r[o_a:o_z]
-    trans = ''.join(trans)
-    plain = plaintext.translate(trans)
+    #plain = plaintext.translate(trans)
+    ok='abcdefghijklmnopqrstuvwxyz'
+    pt = plaintext.lower()
+    plain = '';
+    for c in pt:
+        if c in ok:
+            plain += c;
+        else:
+            plain += ' '
     plain = plain.split()
     offset = get_hat_offset(hat)
     nhat = offset_to_key(offset)
@@ -3247,7 +3249,8 @@ def tridigital_encode(plaintext,hat,key):
             code.append( "%d" % numb_array[ord(c)-ord('a')] )
         code.append(end_of_word)
     code = code[ :-1] #dump end_of_word digit at end
-    return ''.join(code)
+    return [''.join(code),usehat,' '.join(plain),array]
+    
 
 # Cipher ID routines
 def get_ic(code):
