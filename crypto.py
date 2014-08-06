@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 22, added keyphrase_encode, interrupted_key_encode
 #version 21, changed tridigital_encode to eliinate "trans call" 7-29-2014
 #version 20, changed redefence routine to use start_offset instead of start_row, lowest value is now 0, not 1.
 #version 19, fixed route tramp spiral bug that occured if height > width
@@ -4688,3 +4689,65 @@ def simp_sub_decode(codetext,key,shift,key_type,key2='',word_div=0):
             plain += c
     return [plain,pkey,ckey]
     
+def keyphrase_encode(plaintext,key):
+    alpha = 'abcdefghijklmnopqrstuvwxyz'
+    key = key.lower()
+    pkey = ''
+    for c in key:
+        if c in alpha:
+            pkey += c
+    if len(pkey) != 26:
+        return "Error! key does not have 26 letters"
+    plain = plaintext.lower()
+    code = ''
+    for c in plain:
+        if c in alpha:
+            n = alpha.index(c)
+            code += pkey[n]
+        else:
+            code += c
+    code = code.upper()
+    return [code,pkey]
+    
+def interrupted_key_encode(plaintext,key,partial_lengths,cipher_type,word_div):
+    """
+    plaintext, key, partial_lengths are strings, cipher_type is an integer, word_div is '0' or '1'
+    """
+    plain = convert_string(plaintext)
+    key_code = convert_string(key)
+    code = [None]*len(plain)
+    key_list = [None]*len(plain)
+    partial_list = partial_lengths.split(" ")
+    p_lens = [int(c) for c in partial_list]
+    p_index = 0
+    pos = 0
+    cnt = 0
+    while pos < len(plain):
+        if cnt == p_lens[p_index]:
+            cnt = 0
+            p_index += 1
+        k1 = key_code[cnt]      
+        code[pos] = encode_let(plain[pos],k1,cipher_type) 
+        key_list[pos] = k1
+        cnt += 1
+        pos += 1
+    codetext = convert_to_string(code)
+    key_str = convert_to_string(key_list)
+    if word_div == '1':
+        alpha = 'abcdefghijklmnopqrstuvwxyz'
+        temp2 = plaintext.lower()
+        temp = ''
+        temp1 = ''
+        cnt = 0
+        for c in temp2:
+            if c in alpha:
+                temp += codetext[cnt]
+                temp1 += key_str[cnt]
+                cnt += 1
+            else:
+                temp += c;
+                temp1 += c
+        codetext = temp
+        key_str = temp1
+    return [codetext,key_str]
+        
