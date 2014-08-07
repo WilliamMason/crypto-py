@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 23, fix small bugs in tridigial_encode and interrupted_key encode.
 #version 22, added keyphrase_encode, interrupted_key_encode
 #version 21, changed tridigital_encode to eliinate "trans call" 7-29-2014
 #version 20, changed redefence routine to use start_offset instead of start_row, lowest value is now 0, not 1.
@@ -3224,6 +3225,10 @@ def tridigital_encode(plaintext,hat,key):
     #plain = plaintext.translate(trans)
     ok='abcdefghijklmnopqrstuvwxyz'
     pt = plaintext.lower()
+    #delete symbols that might be in middle words: apostrophe, hyphen, equal
+    pt = pt.replace("'","")
+    pt = pt.replace('-','')
+    pt = pt.replace('=','')
     plain = '';
     for c in pt:
         if c in ok:
@@ -4717,7 +4722,7 @@ def interrupted_key_encode(plaintext,key,partial_lengths,cipher_type,word_div):
     key_code = convert_string(key)
     code = [None]*len(plain)
     key_list = [None]*len(plain)
-    partial_list = partial_lengths.split(" ")
+    partial_list = partial_lengths.split()
     p_lens = [int(c) for c in partial_list]
     p_index = 0
     pos = 0
