@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 24 change baconian encode and decode to allow dashes '-' in the key for letters not to be used.
 #version 23, fix small bugs in tridigial_encode and interrupted_key encode.
 #version 22, added keyphrase_encode, interrupted_key_encode
 #version 21, changed tridigital_encode to eliinate "trans call" 7-29-2014
@@ -2984,16 +2985,21 @@ def nihilist_sub_decode6x6(codetext,sqkey,key,route=0):
 #Baconian routines
 def baconian_encode(plaintext,key):
     """
-    input strings plaintext and key. key is string of 26 entries a,b or 0,1.
-    output baconian encoded codetext string
+    input strings plaintext and key. key is string of 26 entries a,b or 0,1, or dash (-) for letters not to be used.
+    output baconian encoded codetext string, work string, and key string
     """
     bacon_dict = { 'a':[0,0,0,0,0],'b':[0,0,0,0,1],'c':[0,0,0,1,0],'d':[0,0,0,1,1],'e':[0,0,1,0,0],\
     'f':[0,0,1,0,1],'g':[0,0,1,1,0],'h':[0,0,1,1,1],'i':[0,1,0,0,0],'j':[0,1,0,0,0],'k':[0,1,0,0,1],\
     'l':[0,1,0,1,0],'m':[0,1,0,1,1],'n':[0,1,1,0,0],'o':[0,1,1,0,1],'p':[0,1,1,1,0],'q':[0,1,1,1,1],\
     'r':[1,0,0,0,0],'s':[1,0,0,0,1],'t':[1,0,0,1,0],'u':[1,0,0,1,1],'v':[1,0,0,1,1],'w':[1,0,1,0,0],\
     'x':[1,0,1,0,1],'y':[1,0,1,1,0],'z':[1,0,1,1,1] }
-    nkey = key.replace('a','0')
-    nkey = nkey.replace('b','1')
+    temp = key.lower()
+    temp = temp.replace('a','0')
+    temp = temp.replace('b','1')
+    nkey = ''
+    for c in temp:
+        if c in ['0','1','-']:
+            nkey += c
     if len(nkey) <> 26:
         print "Key does not have 26 entries!"
         return "ERROR"
@@ -3001,23 +3007,28 @@ def baconian_encode(plaintext,key):
     for i in range(26):
         if nkey[i] == '0':
             inverse_key[0].append(i)
-        else:
+        elif nkey[i] == '1':
             inverse_key[1].append(i)
     plain= convert_string(plaintext)
     plain = convert_to_string(plain)
     code = []
+    work_str = ''
     for c in plain.lower():
         v = bacon_dict[c]
         for d in v:
+            if d == 0:
+                work_str += 'a'
+            else:
+                work_str += 'b'
             n = randrange(len(inverse_key[d]))
             code.append( inverse_key[d][n])
     codetext = convert_to_string(code)
-    return codetext
+    return [codetext,work_str,nkey]
 
 def baconian_decode(codetext,key):
     """
-    input strings codetext and key. key is string of 26 entries a,b or 0,1.
-    output baconian decoded plaintext string
+    input strings codetext and key. key is string of 26 entries a,b or 0,1, or dash for unused letters
+    output baconian decoded plaintext string, work string, and key string
     """
     bacon_reverse_dict = {\
     (1, 0, 1, 1, 1) :'z',\
@@ -3044,20 +3055,29 @@ def baconian_decode(codetext,key):
     (0, 0, 0, 0, 1) :'b',\
     (0, 0, 0, 1, 0) :'c',\
     (0, 0, 0, 0, 0) :'a' }
-    nkey = key.replace('a','0')
-    nkey = nkey.replace('b','1')
+    temp = key.lower()
+    temp = temp.replace('a','0')
+    temp = temp.replace('b','1')
+    nkey = ''
+    for c in temp:
+        if c in ['0','1','-']:
+            nkey += c    
     if len(nkey) <> 26:
         print "Key does not have 26 entries!"
         return "ERROR"
     code = convert_string(codetext)
     plain = []
+    work_str = ''
     for i in range(0,len(code),5):
         lst = ()
         for j in range(i,i+5):
-            lst +=( int(nkey[code[j]]),)
+            lst +=( int(nkey[code[j]]),)           
+            work_str += nkey[code[j]]
         plain.append( bacon_reverse_dict[lst])
     plaintext = "".join(plain)
-    return plaintext
+    work_str = work_str.replace('0','a')
+    work_str = work_str.replace('1','b')
+    return [plaintext,work_str,nkey]
 
 #Grandpre routines
 def grandpre_encode(plaintext,key):
