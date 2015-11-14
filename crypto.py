@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 30. change plaintext 'j' to 'i' in 5x5 checkerboard encode
 #version 24 change baconian encode and decode to allow dashes '-' in the key for letters not to be used.
 #version 23, fix small bugs in tridigial_encode and interrupted_key encode.
 #version 22, added keyphrase_encode, interrupted_key_encode
@@ -2636,7 +2637,7 @@ def checkerboard_encode(plaintext,vertical_key,horizontal_key,key,route=0,use6x6
             return "ERROR"
         used_let[c] = i
     ksquare = get_keysquare(key,route = route,use6x6=use6x6)
-    plain = convert_string(plaintext,use6x6=use6x6)
+    plain = convert_string(plaintext,noJ=1,use6x6=use6x6)
     code = []
     for c in plain:
         co = find_keysquare_coordinates(c,ksquare,use6x6=use6x6)
