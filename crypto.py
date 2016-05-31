@@ -270,8 +270,14 @@ def get_6x6_key_array(key):
     'letters'. We assume that the key string itself does not include digits.
     """
     key_code = convert_6x6_string(key)
-    if len(key_code) == 36: # already done!
-        return key_code
+    if len(key_code) == 36: # exact key already entered, including digits?
+        flag = 1
+        for i in range(36):
+            if i not in key_code:
+                flag = 0
+                break
+        if flag:
+            return key_code
     already_used = [0]*26
     key_array = []
     for i in key_code:
