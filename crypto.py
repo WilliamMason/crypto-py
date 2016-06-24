@@ -1,5 +1,6 @@
 #python module for performing various crypto related functions.
 
+#version 32. In ragbaby routines allow 24 letter key with different missing letters, also 25 and 26 letter keys.
 #version 30. change plaintext 'j' to 'i' in 5x5 checkerboard encode
 #version 24 change baconian encode and decode to allow dashes '-' in the key for letters not to be used.
 #version 23, fix small bugs in tridigial_encode and interrupted_key encode.
@@ -2463,6 +2464,17 @@ def pollux_decode(codetext,key):
     plaintext = ''.join(plain)
     return [plaintext,mcode]
 
+def get_missing_letters(key):
+    alpha = 'abcdefghijklmnopqrstuvwxyz'
+    
+    key = key.lower()
+    missing_letters = ''
+    for c in alpha:
+        if c not in key:
+            missing_letters+= c
+            
+    return(missing_letters)
+    
 #Ragbaby routines
 def ragbaby_encode(plaintext,key):
     """
@@ -2470,27 +2482,34 @@ def ragbaby_encode(plaintext,key):
     with ragbaby cipher. Output upper case
     codetext with word divisions.
     """
-    #get 24 letter keyed alphabet
-    key_code = get_key_array(key,'jx')
+    missing_letters = get_missing_letters(key)
+    if len(missing_letters) > 2: #ordinary ragbaby cipher
+        missing_letters = 'jx'
+    #get  keyed alphabet
+    key_code = get_key_array(key,missing_letters)
     key_alphabet = convert_to_string(key_code)
     plain = plaintext.lower()
-    plain = plain.replace('j','i')
-    plain = plain.replace('x','w')      
     ok = 'abcdefghijklmnopqrstuvwxyz'
+    for c in missing_letters:
+        n = ok.index(c)
+        m = (25+n)%26
+        c1 = ok[m]
+        plain = plain.replace(c,c1)
     special = "-'=" #characters that may occur in middle of words
     code = ''
     start_pos = 0
     word_flag = 0
     le = len(plain)
+    k_len = len(key_alphabet)
     for n in range(le):
         c = plain[n]
         if c in ok:
             if word_flag == 0:
-                start_pos = (start_pos+1)%24
+                start_pos = (start_pos+1)%k_len
                 index = start_pos
                 word_flag = 1
             i = key_alphabet.index(c)
-            code += key_alphabet[ (i+index)%24 ]
+            code += key_alphabet[ (i+index)%k_len ]
             index +=1
         else:
             word_flag = 0
@@ -2506,27 +2525,34 @@ def ragbaby_decode(codetext,key):
     with ragbaby cipher. Output lower case
     plaintext with word divisions.
     """
-    #get 24 letter keyed alphabet
-    key_code = get_key_array(key,'jx')
+    missing_letters = get_missing_letters(key)
+    if len(missing_letters) > 2: #ordinary ragbaby cipher
+        missing_letters = 'jx'
+    #get  keyed alphabet
+    key_code = get_key_array(key,missing_letters)
     key_alphabet = convert_to_string(key_code)
     code = codetext.lower()
-    code = code.replace('j','i')
-    code = code.replace('x','w')      
     ok = 'abcdefghijklmnopqrstuvwxyz'
+    for c in missing_letters:
+        n = ok.index(c)
+        m = (25+n)%26
+        c1 = ok[m]
+        code = code.replace(c,c1)    
     special = "-'=" #characters that may occur in middle of words
     plain = ''
     start_pos = 0
     word_flag = 0
     le = len(code)
+    k_len = len(key_alphabet)    
     for n in range(le):
         c = code[n]
         if c in ok:
             if word_flag == 0:
-                start_pos = (start_pos+1)%24
+                start_pos = (start_pos+1)%k_len
                 index = start_pos
                 word_flag = 1
             i = key_alphabet.index(c)
-            plain += key_alphabet[ (24+i-index)%24 ]
+            plain += key_alphabet[ (k_len+i-index)%k_len ]
             index +=1
         else:
             word_flag = 0
